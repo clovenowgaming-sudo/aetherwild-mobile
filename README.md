@@ -13,7 +13,7 @@ An original Android 3D survival/exploration prototype built with Java and OpenGL
 ## Build APK on GitHub
 Every pushed v* tag runs .github/workflows/android-release.yml, builds the APK, uploads it as a workflow artifact, and publishes it to GitHub Releases.
 
-APK filename: Aetherwild-v1.0.0.apk
+APK filename: Aetherwild-v1.0.1.apk
 
 ## Requirements
 - Android 6.0+ (API 23), OpenGL ES 2.0-capable GPU.
