@@ -56,24 +56,7 @@ jobs:
           emulator-boot-timeout: 600
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -camera-back none
           disable-animations: true
-          script: |
-            set -eu
-            adb install -r app/build/outputs/apk/debug/app-debug.apk
-            adb logcat -c
-            adb shell am force-stop com.aetherwild.game
-            timeout 30 adb shell am start -n com.aetherwild.game/.MainActivity
-            sleep 12
-            adb logcat -d > /tmp/aetherwild-logcat.txt
-            if grep -q "FATAL EXCEPTION" /tmp/aetherwild-logcat.txt; then
-              grep -A 90 -B 10 "FATAL EXCEPTION" /tmp/aetherwild-logcat.txt || true
-              exit 1
-            fi
-            if ! adb shell pidof com.aetherwild.game >/dev/null; then
-              echo "App process exited during startup. Recent logcat:"
-              tail -n 250 /tmp/aetherwild-logcat.txt
-              exit 1
-            fi
-            echo "Aetherwild stayed alive for 12 seconds after launch."
+          script: bash .github/scripts/android-smoke-test.sh
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
