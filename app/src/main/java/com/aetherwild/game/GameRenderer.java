@@ -43,7 +43,7 @@ public final class GameRenderer implements GLSurfaceView.Renderer {
     GameRenderer(Context c) {
         context=c;
         prefs=c.getSharedPreferences("aetherwild",Context.MODE_PRIVATE);
-        graphics=prefs.getInt("graphics",1);
+        graphics=prefs.getInt("graphics",0);
     }
     public int getGraphics(){return graphics;}
     public int getHealth(){return health;}
@@ -63,7 +63,12 @@ public final class GameRenderer implements GLSurfaceView.Renderer {
     @Override public void onSurfaceCreated(GL10 gl,EGLConfig config) {
         GLES20.glEnable(GLES20.GL_DEPTH_TEST);
         GLES20.glDepthFunc(GLES20.GL_LEQUAL);
-        program=createProgram(VERTEX,FRAGMENT);
+        try {
+            program=createProgram(VERTEX,FRAGMENT);
+        } catch (RuntimeException shaderError) {
+            android.util.Log.e("Aetherwild", "Primary shader failed; switching to GLES2 fallback", shaderError);
+            program=createProgram(FALLBACK_VERTEX,FALLBACK_FRAGMENT);
+        }
         aPosition=GLES20.glGetAttribLocation(program,"aPosition");
         aNormal=GLES20.glGetAttribLocation(program,"aNormal");
         aColor=GLES20.glGetAttribLocation(program,"aColor");
@@ -360,7 +365,7 @@ public final class GameRenderer implements GLSurfaceView.Renderer {
         "attribute vec3 aPosition; attribute vec3 aNormal; attribute vec3 aColor; " +
         "varying vec3 vColor; varying vec3 vNormal; varying vec3 vWorld; " +
         "void main(){ vec4 world=uModel*vec4(aPosition,1.0); if(uMaterial>0.5 && uMaterial<1.5){world.y+=sin(world.x*0.13+uTime*1.7)*0.09+cos(world.z*0.11+uTime)*0.06;} " +
-        "vWorld=world.xyz; vNormal=normalize(mat3(uModel)*aNormal); vColor=aColor; gl_Position=uVP*world; }";
+        "vWorld=world.xyz; vNormal=normalize(aNormal); vColor=aColor; gl_Position=uVP*world; }";
     private static final String FRAGMENT =
         "precision mediump float; uniform vec3 uLight; uniform vec3 uFog; uniform vec3 uEye; uniform float uTime; uniform float uMaterial; uniform float uQuality; " +
         "varying vec3 vColor; varying vec3 vNormal; varying vec3 vWorld; " +
@@ -369,4 +374,13 @@ public final class GameRenderer implements GLSurfaceView.Renderer {
         "if(uMaterial>0.5 && uMaterial<1.5){float fres=pow(1.0-max(dot(n,v),0.0),2.0);col=mix(col,vec3(0.16,0.66,0.78),0.34+fres*0.4)+spec*0.4;} " +
         "if(uMaterial>1.5){col+=vec3(0.08,0.65,0.48)*(0.22+0.22*sin(uTime*3.0));col+=spec*0.6;} " +
         "float dist=length(uEye-vWorld); float fog=clamp((dist-42.0)/(uQuality>1.5?120.0:88.0),0.0,0.82); col=mix(col,uFog,fog); gl_FragColor=vec4(col,1.0); }";
+
+    // Minimal, conservative GLES 2.0 shaders for drivers that reject the main shader.
+    private static final String FALLBACK_VERTEX =
+        "uniform mat4 uVP; uniform mat4 uModel; attribute vec3 aPosition; attribute vec3 aNormal; attribute vec3 aColor; " +
+        "varying vec3 vColor; varying vec3 vNormal; " +
+        "void main(){ vColor=aColor; vNormal=aNormal; gl_Position=uVP*uModel*vec4(aPosition,1.0); }";
+    private static final String FALLBACK_FRAGMENT =
+        "precision mediump float; uniform vec3 uLight; varying vec3 vColor; varying vec3 vNormal; " +
+        "void main(){ float light=0.32+0.68*max(dot(normalize(vNormal),normalize(uLight)),0.0); gl_FragColor=vec4(vColor*light,1.0); }";
 }

@@ -21,7 +21,7 @@ public class MainActivity extends Activity {
         immersive();
         surface = new GLSurfaceView(this);
         surface.setEGLContextClientVersion(2);
-        surface.setEGLConfigChooser(8, 8, 8, 8, 16, 0);
+        surface.setEGLConfigChooser(8, 8, 8, 0, 16, 0);
         renderer = new GameRenderer(this);
         surface.setRenderer(renderer);
         surface.setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
