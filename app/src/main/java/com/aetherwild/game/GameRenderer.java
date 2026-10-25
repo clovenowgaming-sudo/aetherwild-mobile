@@ -361,7 +361,7 @@ public final class GameRenderer implements GLSurfaceView.Renderer {
         Mesh finish(){float[] out=new float[n];System.arraycopy(v,0,out,0,n);return new Mesh(out,n/9);}
     }
     private static final String VERTEX =
-        "uniform mat4 uVP; uniform mat4 uModel; uniform float uTime; uniform float uMaterial; " +
+        "precision mediump float; uniform mat4 uVP; uniform mat4 uModel; uniform float uTime; uniform float uMaterial; " +
         "attribute vec3 aPosition; attribute vec3 aNormal; attribute vec3 aColor; " +
         "varying vec3 vColor; varying vec3 vNormal; varying vec3 vWorld; " +
         "void main(){ vec4 world=uModel*vec4(aPosition,1.0); if(uMaterial>0.5 && uMaterial<1.5){world.y+=sin(world.x*0.13+uTime*1.7)*0.09+cos(world.z*0.11+uTime)*0.06;} " +

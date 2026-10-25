@@ -14,6 +14,11 @@ if grep -q "FATAL EXCEPTION" /tmp/aetherwild-logcat.txt; then
   grep -A 90 -B 10 "FATAL EXCEPTION" /tmp/aetherwild-logcat.txt || true
   exit 1
 fi
+if grep -q "Primary shader failed; switching to GLES2 fallback" /tmp/aetherwild-logcat.txt; then
+  echo "Primary shader failed to link; dump shader error:"
+  grep -A 30 -B 5 "Primary shader failed; switching to GLES2 fallback" /tmp/aetherwild-logcat.txt || true
+  exit 1
+fi
 if ! adb shell pidof "$PKG" >/dev/null; then
   echo "App process exited during launch. Recent logcat follows:"
   tail -n 250 /tmp/aetherwild-logcat.txt
